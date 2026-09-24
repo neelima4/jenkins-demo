@@ -28,7 +28,19 @@ pipeline {
                 sh 'mvn package -DskipTests'
             }
         }
-
+	
+	stage('Credentials Demo') {
+ 	   steps {
+        	withCredentials([string(
+            	credentialsId: 'demo-secret',
+            	variable: 'MY_SECRET'
+        )]) {
+            sh '''
+                echo "Credential loaded successfully"
+            '''
+        }
+    }
+}
         stage('Deploy') {
             steps {
                 echo "Deploying ${APP_NAME} to ${APP_ENV}"
