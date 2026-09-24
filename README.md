@@ -7,3 +7,5 @@ This repository is used for Jenkins practice.
 Second change from GitHub.
 
 Jenkins automatic build test.
+
+Testing automatic Jenkins Pipeline trigger
