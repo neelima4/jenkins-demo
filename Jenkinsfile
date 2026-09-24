@@ -1,5 +1,9 @@
 pipeline {
     agent any
+ environment {
+        APP_NAME = 'jenkins-demo'
+        APP_ENV = 'dev'
+    }
 
     stages {
 
@@ -23,8 +27,20 @@ pipeline {
                 sh 'mvn package -DskipTests'
             }
         }
-    }
 
+           stage('Deploy') {
+            steps {
+                echo "Deploying ${APP_NAME} to ${APP_ENV}"
+                sh '''
+                    mkdir -p /tmp/jenkins-deploy
+                    cp target/*.jar /tmp/jenkins-deploy/
+                    ls -lh /tmp/jenkins-deploy/
+                '''
+
+    		}
+
+    	 }
+    }
     post {
         success {
             echo 'Build completed successfully!'
