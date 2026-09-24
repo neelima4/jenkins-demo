@@ -1,6 +1,7 @@
 pipeline {
     agent any
- environment {
+
+    environment {
         APP_NAME = 'jenkins-demo'
         APP_ENV = 'dev'
     }
@@ -9,14 +10,14 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Building application...'
+                echo "Building ${APP_NAME}"
                 sh 'mvn clean compile'
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Running unit tests...'
+                echo 'Running tests...'
                 sh 'mvn test'
             }
         }
@@ -28,7 +29,7 @@ pipeline {
             }
         }
 
-           stage('Deploy') {
+        stage('Deploy') {
             steps {
                 echo "Deploying ${APP_NAME} to ${APP_ENV}"
                 sh '''
@@ -36,19 +37,18 @@ pipeline {
                     cp target/*.jar /tmp/jenkins-deploy/
                     ls -lh /tmp/jenkins-deploy/
                 '''
-
-    		}
-
-    	 }
+            }
+        }
     }
+
     post {
         success {
-            echo 'Build completed successfully!'
             archiveArtifacts artifacts: 'target/*.jar'
+            echo 'Pipeline completed successfully!'
         }
 
         failure {
-            echo 'Build failed!'
+            echo 'Pipeline failed!'
         }
     }
 }
