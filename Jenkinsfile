@@ -35,7 +35,7 @@ pipeline {
                 sh '''
                     docker run -d \
                     --name jenkins-demo-container \
-                    -p 8080:8080 \
+                    -p 8081:8080 \
                     jenkins-demo:latest
                 '''
             }
