@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = '<neelima4>/jenkins-demo'
+        DOCKER_IMAGE = 'neelima4/jenkins-demo'
     }
 
     stages {
