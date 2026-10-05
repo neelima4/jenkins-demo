@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = '<neelima4>/jenkins-demo'
+    }
+
     stages {
 
         stage('Checkout') {
@@ -17,7 +21,27 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t jenkins-demo:latest .'
+                sh 'docker build -t $DOCKER_IMAGE:${BUILD_NUMBER} .'
+            }
+        }
+
+        stage('Docker Login and Push') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login \
+                        -u "$DOCKER_USER" \
+                        --password-stdin
+
+                        docker push $DOCKER_IMAGE:${BUILD_NUMBER}
+                    '''
+                }
             }
         }
 
@@ -30,16 +54,15 @@ pipeline {
             }
         }
 
-        stage('Run Docker Container') {
+        stage('Deploy Container') {
             steps {
                 sh '''
                     docker run -d \
                     --name jenkins-demo-container \
                     -p 8081:8080 \
-                    jenkins-demo:latest
+                    $DOCKER_IMAGE:${BUILD_NUMBER}
                 '''
             }
         }
     }
 }
-
