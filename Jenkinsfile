@@ -1,66 +1,45 @@
 pipeline {
     agent any
 
-    environment {
-        APP_NAME = 'jenkins-demo'
-        APP_ENV = 'dev'
-    }
-
     stages {
 
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                echo "Building ${APP_NAME}"
-                sh 'mvn clean compile'
+                checkout scm
             }
         }
 
-        stage('Test') {
+        stage('Build with Maven') {
             steps {
-                echo 'Running tests...'
-                sh 'mvn test'
+                sh 'mvn clean package'
             }
         }
 
-        stage('Package') {
+        stage('Build Docker Image') {
             steps {
-                echo 'Creating JAR...'
-                sh 'mvn package -DskipTests'
+                sh 'docker build -t jenkins-demo:latest .'
             }
         }
-	
-	stage('Credentials Demo') {
- 	   steps {
-        	withCredentials([string(
-            	credentialsId: 'demo-secret',
-            	variable: 'MY_SECRET'
-        )]) {
-            sh '''
-                echo "Credential loaded successfully"
-            '''
-        }
-    }
-}
-        stage('Deploy') {
+
+        stage('Stop Old Container') {
             steps {
-                echo "Deploying ${APP_NAME} to ${APP_ENV}"
                 sh '''
-                    mkdir -p /tmp/jenkins-deploy
-                    cp target/*.jar /tmp/jenkins-deploy/
-                    ls -lh /tmp/jenkins-deploy/
+                    docker stop jenkins-demo-container || true
+                    docker rm jenkins-demo-container || true
+                '''
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                sh '''
+                    docker run -d \
+                    --name jenkins-demo-container \
+                    -p 8080:8080 \
+                    jenkins-demo:latest
                 '''
             }
         }
     }
-
-    post {
-        success {
-            archiveArtifacts artifacts: 'target/*.jar'
-            echo 'Pipeline completed successfully!'
-        }
-
-        failure {
-            echo 'Pipeline failed!'
-        }
-    }
 }
+
