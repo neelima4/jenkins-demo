@@ -21,7 +21,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE:${BUILD_NUMBER} .'
+                sh 'docker build -t $DOCKER_IMAGE:${BUILD_NUMBER} -t $DOCKER_IMAGE:latest .'
             }
         }
 
@@ -40,27 +40,19 @@ pipeline {
                         --password-stdin
 
                         docker push $DOCKER_IMAGE:${BUILD_NUMBER}
+			docker push $DOCKER_IMAGE:latest
                     '''
                 }
             }
         }
 
-        stage('Stop Old Container') {
-            steps {
-                sh '''
-                    docker stop jenkins-demo-container || true
-                    docker rm jenkins-demo-container || true
-                '''
-            }
-        }
 
-        stage('Deploy Container') {
+        stage('Deploy with Docker Compose') {
             steps {
                 sh '''
-                    docker run -d \
-                    --name jenkins-demo-container \
-                    -p 8081:8080 \
-                    $DOCKER_IMAGE:${BUILD_NUMBER}
+                    docker compose pull
+	            docker compose down
+                    docker compose up -d
                 '''
             }
         }
