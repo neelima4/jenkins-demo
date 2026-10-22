@@ -1,2 +1,5 @@
 com/demo/App.class
+com/example/JenkinsDemoApplication.class
 com/demo/Calculator.class
+WebApp.class
+com/example/HelloController.class
